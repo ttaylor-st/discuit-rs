@@ -17,42 +17,6 @@ use serde::{Deserialize, Serialize};
 // - [X] User
 // - [X] Response (InitResponse)
 
-/// `InitialResponse` represents the response from the `/api/_initial` endpoint.
-#[derive(Debug, Serialize, Deserialize)]
-pub struct InitialResponse {
-    /// Array of reasons for reporting a post or comment.
-    #[serde(rename = "reportReasons")]
-    pub report_reasons: Vec<ReportReason>,
-
-    /// The user that is currently logged in. Null if the user is not logged in.
-    pub user: Option<User>,
-
-    /// Sequence of the user's lists.
-    // TODO: Add List struct.
-    pub lists: Option<Vec<String>>,
-
-    /// Array of communities that the user is a member of.
-    /// If the user is not logged in, the default communities are returned.
-    pub communities: Vec<Community>,
-
-    /// Total number of users on the platform.
-    #[serde(rename = "noUsers")]
-    pub no_users: i32,
-
-    /// Array of communities that the user is banned from.
-    /// Null if the user is not logged in.
-    #[serde(rename = "bannedFrom")]
-    pub banned_from: Option<Vec<Community>>,
-
-    /// The public key for VAPID. This is used for push notifications.
-    #[serde(rename = "vapidPublicKey")]
-    pub vapid_public_key: String,
-
-    /// Array of mutes that the user has.
-    #[serde(rename = "mutes")]
-    pub mutes: Mutes,
-}
-
 /// `Mutes` represents the mutes that a user has, including community and user mutes.
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Mutes {
@@ -332,4 +296,297 @@ pub struct Mute {
     /// If a community is being muted, the Community object of the community, otherwise undefined.
     #[serde(rename = "mutedCommunity")]
     pub muted_community: Option<Community>,
+}
+
+/// `Comment` represents a comment on a post.
+#[derive(Debug, Serialize, Deserialize)]
+pub struct Comment {
+    /// The ID of the comment.
+    pub id: String,
+    /// The ID of the post the comment belongs to.
+    #[serde(rename = "postId")]
+    pub post_id: String,
+    /// The public ID of the post the comment belongs to.
+    #[serde(rename = "postPublicId")]
+    pub post_public_id: String,
+
+    /// The ID of the community in which this comment was made.
+    #[serde(rename = "communityId")]
+    pub community_id: String,
+    /// The name of the community in which this comment was made.
+    #[serde(rename = "communityName")]
+    pub community_name: String,
+
+    /// The ID of the user that made the comment.
+    #[serde(rename = "userId")]
+    pub user_id: Option<String>,
+    /// The username of the user that made the comment.
+    pub username: String,
+    /// The ID of the Ghost user in case the author deleted their account, otherwise undefined.
+    #[serde(rename = "userGhostId")]
+    pub user_ghost_id: Option<String>,
+    /// The capacity in which the comment was created.
+    #[serde(rename = "userGroup")]
+    pub user_group: String,
+    /// Indicates whether the author account is deleted.
+    #[serde(rename = "userDeleted")]
+    pub user_deleted: bool,
+
+    /// The comment ID of the parent comment if it exists, otherwise null if this is a top-level comment.
+    #[serde(rename = "parentId")]
+    pub parent_id: Option<String>,
+    /// How far deep into a comment chain this comment is. Top-level comments have a depth of 0.
+    pub depth: i32,
+    /// The total number of replies the comment has, including all deeper comments.
+    #[serde(rename = "noReplies")]
+    pub no_replies: i32,
+    /// The number of direct replies the comment has. This does not include replies deeper than 1 more than the comment itself.
+    #[serde(rename = "noDirectReplies")]
+    pub no_direct_replies: i32,
+    /// The comment IDs of all ancestor comments starting from the top-most comment.
+    pub ancestors: Option<Vec<String>>,
+
+    /// The body of the comment.
+    pub body: String,
+    /// The number of upvotes that the comment has.
+    pub upvotes: i32,
+    /// The number of downvotes that the comment has.
+    pub downvotes: i32,
+    /// The time at which the comment was created.
+    #[serde(rename = "createdAt")]
+    pub created_at: String,
+    /// If the comment was edited, the time at which it was last edited, otherwise null.
+    #[serde(rename = "editedAt")]
+    pub edited_at: Option<String>,
+
+    /// If the content of the comment was deleted, otherwise undefined.
+    #[serde(rename = "contentStripped")]
+    pub content_stripped: Option<bool>,
+    /// If the comment was deleted.
+    pub deleted: bool,
+    /// If the comment was deleted, the time at which it was deleted, otherwise null.
+    #[serde(rename = "deletedAt")]
+    pub deleted_at: Option<String>,
+    /// If the comment was deleted, in what capacity it was deleted, otherwise undefined.
+    #[serde(rename = "deletedAs")]
+    pub deleted_as: Option<String>,
+
+    /// The User object of the author of the comment.
+    pub author: User,
+    /// Whether the author is muted by the authenticated user. If not authenticated, this is undefined.
+    #[serde(rename = "isAuthorMuted")]
+    pub is_author_muted: Option<bool>,
+
+    /// Indicated whether the authenticated user has voted. If not authenticated, this is null.
+    #[serde(rename = "userVoted")]
+    pub user_voted: Option<bool>,
+    /// Indicates whether the authenticated user's vote is an upvote. If not authenticated, this is null.
+    #[serde(rename = "userVotedUp")]
+    pub user_voted_up: Option<bool>,
+
+    /// The title of the post the comment belongs to.
+    #[serde(rename = "postTitle")]
+    pub post_title: Option<String>,
+    /// Indicates whether the post the comment belongs to is deleted.
+    #[serde(rename = "postDeleted")]
+    pub post_deleted: bool,
+    /// If the post is deleted, in what capacity, otherwise undefined.
+    #[serde(rename = "postDeletedAs")]
+    pub post_deleted_as: Option<String>,
+}
+
+/// `Post` represents a post.
+#[derive(Debug, Serialize, Deserialize)]
+pub struct Post {
+    /// The ID of the post.
+    pub id: String,
+    /// The type of post.
+    #[serde(rename = "type")]
+    pub post_type: String,
+    /// The value in https://discuit.net/gaming/post/{publicId}
+    #[serde(rename = "publicId")]
+    pub public_id: String,
+
+    /// ID of the author.
+    #[serde(rename = "userId")]
+    pub user_id: String,
+    /// Username of the author.
+    pub username: String,
+    /// The ID of the Ghost user in case the user deleted their account.
+    #[serde(rename = "userGhostId")]
+    pub user_ghost_id: Option<String>,
+    /// In what capacity the post was created. For "speaking officially" as a mod or an admin.
+    #[serde(rename = "userGroup")]
+    pub user_group: String,
+    /// Indicated whether the author's account is deleted.
+    #[serde(rename = "userDeleted")]
+    pub user_deleted: bool,
+
+    /// If the post is pinned in the community.
+    #[serde(rename = "isPinned")]
+    pub is_pinned: bool,
+    /// If the post is pinned site-wide.
+    #[serde(rename = "isPinnedSite")]
+    pub is_pinned_site: bool,
+
+    /// The ID of the community the post is posted in.
+    #[serde(rename = "communityId")]
+    pub community_id: String,
+    /// The name of that community.
+    #[serde(rename = "communityName")]
+    pub community_name: String,
+    /// The profile picture of that community.
+    #[serde(rename = "communityProPic")]
+    pub community_pro_pic: Image,
+    /// The banner image of that community.
+    #[serde(rename = "communityBannerImage")]
+    pub community_banner_image: Image,
+
+    /// Greater than 3 characters.
+    pub title: String,
+    /// Body of the post (only valid for text posts, null otherwise).
+    pub body: Option<String>,
+    /// The posted image (only valid for image posts, null otherwise).
+    pub image: Option<Image>,
+    /// The URL of the link.
+    pub link: Option<Link>,
+
+    /// If the post was locked.
+    pub locked: bool,
+    /// Who locked the post.
+    #[serde(rename = "lockedBy")]
+    pub locked_by: Option<String>,
+    /// In what capacity the post was locked,
+    #[serde(rename = "lockedByGroup")]
+    pub locked_by_group: Option<String>,
+    /// Time at which the post was locked.
+    #[serde(rename = "lockedAt")]
+    pub locked_at: Option<String>,
+
+    /// The number of upvotes the post has.
+    pub upvotes: i32,
+    /// The number of downvotes the post has.
+    pub downvotes: i32,
+    /// For ordering posts by 'hot'.
+    pub hotness: i32,
+
+    /// The time when the post was created.
+    pub created_at: String,
+    /// Last edited time.
+    #[serde(rename = "editedAt")]
+    pub edited_at: Option<String>,
+    /// Either the post created time or, if there are comments on the post, the time the most recent comment was created at.
+    #[serde(rename = "lastActivityAt")]
+    pub last_activity_at: String,
+
+    /// If the post was deleted.
+    pub deleted: bool,
+    /// Time at which the post was deleted, null if the post has not been deleted.
+    #[serde(rename = "deletedAt")]
+    pub deleted_at: Option<String>,
+    /// ID of the user who deleted the post.
+    #[serde(rename = "deletedBy")]
+    pub deleted_by: Option<String>,
+    /// In what capacity the content was deleted, undefined if the content has not been deleted.
+    #[serde(rename = "deletedAs")]
+    pub deleted_as: Option<String>,
+    /// If true, the body of the post and all associated links or images are deleted.
+    #[serde(rename = "deletedContent")]
+    pub deleted_content: bool,
+    /// In what capacity the content was deleted, undefined if the content has not been deleted.
+    #[serde(rename = "deletedContentAs")]
+    pub deleted_content_as: Option<String>,
+
+    /// Comment count.
+    #[serde(rename = "noComments")]
+    pub no_comments: i32,
+    /// Comments of the post.
+    pub comments: Option<Vec<Comment>>,
+    /// Pagination cursor for comments.
+    #[serde(rename = "commentsNext")]
+    pub comments_next: Option<String>,
+
+    /// Indicated whether the authenticated user has voted. If not authenticated, the value is null.
+    #[serde(rename = "userVoted")]
+    pub user_voted: Option<bool>,
+    /// Indicated whether the authenticated user's vote is an upvote.
+    #[serde(rename = "userUpvoted")]
+    pub user_upvoted: Option<bool>,
+
+    /// Indicated whether the author of the post has been muted by the logged in user.
+    #[serde(rename = "isAuthorMuted")]
+    pub is_author_muted: bool,
+    /// Indicated whether the community the post is in has been muted by the logged in user.
+    #[serde(rename = "isCommunityMuted")]
+    pub is_community_muted: bool,
+
+    /// The Community object of the community the post is in.
+    pub community: Community,
+    /// The User object of the author of the post.
+    pub user: Option<User>,
+}
+
+/// `Link` represents a link
+#[derive(Debug, Serialize, Deserialize)]
+pub struct Link {
+    /// The URL of the link.
+    pub url: String,
+    /// The hostname of the link. For a URL of "https://discuit.net", this would be "discuit.net".
+    pub hostname: String,
+    /// The image object of the OpenGraph image on the site. If no OpenGraph image was found, this is null.
+    pub image: Option<Image>,
+}
+
+/// `List` represents a list.
+#[derive(Debug, Serialize, Deserialize)]
+pub struct List {
+    /// The ID of the list.
+    pub id: i32,
+    /// The ID of the list owner.
+    #[serde(rename = "userId")]
+    pub user_id: String,
+    /// The username of the list owner.
+    pub username: String,
+    /// The name of the list.
+    pub name: String,
+    /// The display name of the list.
+    #[serde(rename = "displayName")]
+    pub display_name: String,
+    /// The description of the list. If no description was set, this is null.
+    pub description: Option<String>,
+    /// Indicates whether the list is a public or a private list.
+    pub public: bool,
+    /// Number of items in the list.
+    #[serde(rename = "numItems")]
+    pub num_items: i32,
+    /// The current sorting of the list.
+    pub sort: String,
+    /// The time at which the list was created.
+    #[serde(rename = "createdAt")]
+    pub created_at: DateTime<Utc>,
+    /// The last time an item was added to the list (for brand new lists this value is the same as createdAt).
+    #[serde(rename = "lastUpdatedAt")]
+    pub last_updated_at: DateTime<Utc>,
+}
+
+/// `ListItem` represents an item in a list.
+#[derive(Debug, Serialize, Deserialize)]
+pub struct ListItem {
+    /// The ID of the list item.
+    pub id: i32,
+    /// The ID of the list.
+    #[serde(rename = "listId")]
+    pub list_id: i32,
+    /// The type of the target item.
+    #[serde(rename = "targetType")]
+    pub target_type: String,
+    /// The ID of the target item.
+    #[serde(rename = "targetId")]
+    pub target_id: String,
+    /// The time at which the list item was created.
+    #[serde(rename = "createdAt")]
+    pub created_at: DateTime<Utc>,
+    /// The target item.
+    #[serde(rename = "targetItem")]
+    pub target_item: Post,
 }
