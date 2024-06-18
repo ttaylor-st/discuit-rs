@@ -76,7 +76,7 @@ pub struct User {
     #[serde(rename = "createdAt")]
     pub created_at: DateTime<Utc>,
     /// If the account has been deleted.
-    #[serde(rename = "isDeleted")]
+    #[serde(rename = "deleted")]
     pub deleted: bool,
     /// If the account was deleted, the time at which it was deleted, otherwise null.
     #[serde(rename = "deletedAt")]
