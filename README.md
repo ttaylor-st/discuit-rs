@@ -14,27 +14,20 @@ git = "https://github.com/ttaylor-st/discuit-rs.git"
 discuit-rs will eventually be available on crates.io, but for now you can use
 the git repository.
 
-<!---
+
 ## basic usage
 
 ```rust
-use std::env;
-use discuit_rs::DiscuitClient;
+use discuit_rs::client::*;
 
 #[tokio::main]
 async fn main() {
-    let base_url = env::var("DISCUIT_BASE_URL").unwrap();
-    let username = env::var("DISCUIT_USERNAME").unwrap();
-    let password = env::var("DISCUIT_PASSWORD").unwrap();
-
-    let mut client = DiscuitClient::new(&base_url);
-    client.initialize().await.unwrap();
-    client.login(&username, &password).await.unwrap();
-    let user = client.get_user().await.unwrap();
-    println!("{:?}", user);
+    let base_url = "https://discuit.net";
+    let mut client = DiscuitClient::new(base_url);
+    let response = client.initialize().await;
+    println!("{:?}", response);
 }
 ```
--->
 
 <!--- TODO: you can view the documentation [here](https://ttaylor-st.github.io/discuit-rss))and more examples in the [`examples`](examples) directory (soon). -->
 
