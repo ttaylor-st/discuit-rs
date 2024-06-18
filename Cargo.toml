@@ -2,6 +2,13 @@
 name = "discuit-rs"
 version = "0.1.0"
 edition = "2021"
+license = "MIT"
+repository = "https://github.com/ttaylor-st/discuit-rs.git"
+homepage = "https://github.com/ttaylor-st/discuit-rs"
+description = "a rust library for easily interacting with the Discuit API "
+authors = ["ttaylor-st <ttaylor-st@murena.io>"]
+readme = "README.md"
+documentation = "https://ttaylor-st.github.io/discuit-rs/ "
 
 [dependencies]
 chrono = { version = "0.4.38", features = ["serde"] }
