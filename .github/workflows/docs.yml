@@ -19,17 +19,15 @@ concurrency:
 
 jobs:
   build:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
-
+      - name: Setup pages
+        id: pages
+        uses: actions/configure-pages@v4
       - name: Docs
         run: cargo doc --no-deps
-
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
