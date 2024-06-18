@@ -59,6 +59,15 @@ impl DiscuitClient {
         }
     }
 
+    /// Resets the client to its initial state.
+    pub fn reset(&mut self) {
+        self.log(LogLevel::Info, "Resetting client ...");
+        self.csrf_token = String::new();
+        self.session_id = String::new();
+        self.user = None;
+        self.log(LogLevel::Info, "Client reset.");
+    }
+
     /// Initialize the client by fetching a CSRF token and a session ID.
     /// Returns `InitialResponse`.
     pub async fn initialize(&mut self) -> Result<InitialResponse, reqwest::Error> {
