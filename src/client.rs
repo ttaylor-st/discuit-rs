@@ -1,3 +1,5 @@
+use crate::structs::api_requests::*;
+use crate::structs::api_responses::*;
 use crate::structs::api_types::*;
 use crate::structs::internal_types::*;
 use reqwest::{Client, ClientBuilder};

@@ -30,6 +30,13 @@
 pub mod structs {
     /// The `api_types` module contains all types used in the `discuit-rs` library.
     pub mod api_types;
+
+    /// The `api_responses` module contains all API response structs used in the `discuit-rs` library.
+    pub mod api_responses;
+
+    /// The `api_requests` module contains all API request structs used in the `discuit-rs` library.
+    pub mod api_requests;
+
     /// The `internal_types` module contains all internal types used in the `discuit-rs` library.
     pub mod internal_types;
 }
