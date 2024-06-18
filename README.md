@@ -29,8 +29,8 @@ async fn main() {
 }
 ```
 
-<!--- TODO: you can view the documentation [here](https://ttaylor-st.github.io/discuit-rss))and more examples in the [`examples`](examples) directory (soon). -->
-
+you can view the documentation [here](https://ttaylor-st.github.io/discuit-rss)
+and the examples [here](./examples).
 
 
 ## license
