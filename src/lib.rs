@@ -5,13 +5,15 @@
 //!
 //! # Quick Start
 //!
+//! This example was taken from `examples/quickstart/main.rs`.
+//!
 //! ```rust
 //! use std::env;
-//! use discuit_rs::DiscuitClient;
+//! use discuit_rs::client::*;
 //!
 //! #[tokio::main]
 //! async fn main() {
-//!     let base_url = env::var("DISCUIT_BASE_URL").unwrap();
+//!     let base_url = "https://discuit.net";
 //!
 //!     let mut client = DiscuitClient::new(&base_url);
 //!     let response = client.initialize().await;
@@ -19,4 +21,18 @@
 //! }
 //! ```
 //!
-//! See the `examples` directory for more examples.
+//! You can find more examples in the `examples` directory. To run the examples, use the following command:
+//! ```sh
+//! cargo run --example <example_name>
+//! ```
+
+/// The structs module contains all structs and enums used in the `discuit-rs` library.
+pub mod structs {
+    /// The `api_types` module contains all types used in the `discuit-rs` library.
+    pub mod api_types;
+    /// The `internal_types` module contains all internal types used in the `discuit-rs` library.
+    pub mod internal_types;
+}
+
+/// The client module contains the `DiscuitClient` struct, which is used to interact with the Discuit API.
+pub mod client;
