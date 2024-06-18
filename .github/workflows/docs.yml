@@ -21,15 +21,17 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v2
       - uses: dtolnay/rust-toolchain@stable
       - name: Setup pages
         id: pages
         uses: actions/configure-pages@v4
       - name: Docs
         run: cargo doc --no-deps
+      - name: Remove lock file
+        run: rm target/doc/.lock
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v1
+        uses: actions/upload-artifact@v4
         with:
           path: target/doc
           name: github-pages
