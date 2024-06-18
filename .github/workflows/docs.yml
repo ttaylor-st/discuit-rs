@@ -30,9 +30,14 @@ jobs:
       - name: Docs
         run: cargo doc --no-deps
 
-      - name: Deploy
-        uses: actions/deploy-pages@v3
+      - name: Move docs
+        run: mv target/doc public
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v2
         with:
-          target_branch: gh-pages
-          publish_dir: target/doc
-          token: ${{ secrets.GITHUB_TOKEN }}
+          path: public
+
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v4
