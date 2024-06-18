@@ -14,8 +14,8 @@ permissions:
   id-token: write
 
 concurrency:
-  group: "pages"
-  cancel-in-progress: true
+  group: deploy
+  cancel-in-progress: false
 
 jobs:
   build:
@@ -37,11 +37,12 @@ jobs:
           name: github-pages
 
   deploy:
-    name: Deploy
+    name: deploy
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
+    needs: build
     steps:
       - name: Deploy
         id: deployment
