@@ -1,0 +1,43 @@
+name: Documentation
+
+# builds docs and deploys to github pages
+
+on:
+  push:
+    branches: ["master"]
+
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+jobs:
+  build:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: dtolnay/rust-toolchain@stable
+
+      - name: Docs
+        run: cargo doc --no-deps
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: docs
+          path: target/doc
+
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v4
+        with:
+          artifact_name: docs
