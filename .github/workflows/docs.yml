@@ -30,15 +30,19 @@ jobs:
       - name: Docs
         run: cargo doc --no-deps
 
-      - name: Move docs
-        run: mv target/doc public
-
       - name: Upload artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
-          path: public
+          path: target/doc
           name: github-pages
 
+  deploy:
+    name: Deploy
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
       - name: Deploy
         id: deployment
         uses: actions/deploy-pages@v4
