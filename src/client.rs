@@ -31,8 +31,10 @@ impl DiscuitClient {
     /// Logger is a helper function to log messages based on the log level.
     /// For internal use only.
     fn log(&self, level: LogLevel, message: &str) {
+        let timestamp = chrono::Local::now().format("%Y-%m-%d %H:%M:%S");
+
         if level >= self.log_level {
-            println!("[{}] {}", level, message);
+            println!("{} [{}] {}", timestamp, level, message);
         }
     }
 
