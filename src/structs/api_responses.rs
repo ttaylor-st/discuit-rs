@@ -7,9 +7,9 @@ use serde::{Deserialize, Serialize};
 /// Most API errors return a JSON object of the following type, along with the appropriate HTTP status code:
 /// ```json
 /// {
-///  "status": 400,
-/// "code": "error_code",
-/// "message": "Human readable error message"
+///     "status": 400,
+///     "code": "error_code",
+///     "message": "Human readable error message"
 /// }
 /// ```
 #[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Deserialize, Serialize)]
@@ -60,12 +60,12 @@ pub struct InitialResponse {
     pub mutes: Mutes,
 }
 
-/// `LoginResponse` represents the response from the `/api/_login` endpoint.
+/// `UserResponse` represents the response from multiple endpoints that return a user object.
 /// The body of the response is a JSON object that will be either of type
 /// `User` or `APIError`.
 #[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Deserialize, Serialize)]
 #[serde(untagged)]
-pub enum LoginResponse {
+pub enum UserResponse {
     /// The user object.
     User(User),
 

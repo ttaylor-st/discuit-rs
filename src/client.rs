@@ -104,13 +104,11 @@ impl DiscuitClient {
     }
 
     /// Log in to the Discuit instance with the given username and password.
-    /// Returns either `LoginResponse` (can be either `User`, or `APIErrror`)
-    /// or a `reqwest::Error`.
     pub async fn login(
         &mut self,
         username: &str,
         password: &str,
-    ) -> Result<LoginResponse, reqwest::Error> {
+    ) -> Result<UserResponse, reqwest::Error> {
         self.log(LogLevel::Info, "Logging in ...");
         self.log(
             LogLevel::Info,
@@ -132,15 +130,15 @@ impl DiscuitClient {
             .await?;
 
         let text = response.text().await?;
-        let login_response: LoginResponse = serde_json::from_str(&text).unwrap();
+        let login_response: UserResponse = serde_json::from_str(&text).unwrap();
         self.log(
             LogLevel::Debug,
             &format!("Login response: {:#?}", login_response),
         );
         self.log(LogLevel::Info, "Logged in.");
         self.user = match &login_response {
-            LoginResponse::Error(_) => None,
-            LoginResponse::User(user) => Some(user.clone()),
+            UserResponse::Error(_) => None,
+            UserResponse::User(user) => Some(user.clone()),
         };
 
         Ok(login_response)
@@ -201,10 +199,43 @@ impl DiscuitClient {
         self.log(LogLevel::Info, "User fetched.");
         Ok(user)
     }
+
+    /// Fetch another user from the Discuit instance.
+    /// Returns UserResponse
+    pub async fn get_user_by_username(
+        &mut self,
+        username: &str,
+    ) -> Result<UserResponse, reqwest::Error> {
+        self.log(LogLevel::Info, "Fetching user by username ...");
+        self.log(
+            LogLevel::Info,
+            &format!("GET {}/api/users/{}", self.base_url, username),
+        );
+        let response = self
+            .client
+            .get(&format!("{}/api/users/{}", self.base_url, username))
+            .header("X-Csrf-Token", &self.csrf_token)
+            .header(
+                "Cookie",
+                &format!("csrftoken={}; SID={}", self.csrf_token, self.session_id),
+            )
+            .send()
+            .await?;
+
+        let text = response.text().await?;
+        let user_response: UserResponse = serde_json::from_str(&text).unwrap();
+        self.log(
+            LogLevel::Debug,
+            &format!("User by username: {:#?}", user_response),
+        );
+        self.log(LogLevel::Info, "User by username fetched.");
+        Ok(user_response)
+    }
 }
 
 #[cfg(test)]
 mod tests {
+    use rand::random;
     use super::*;
 
     fn get_env_var(name: &str) -> Result<String, String> {
@@ -261,5 +292,45 @@ mod tests {
 
         // Ensure that the user is fetched
         assert_eq!(user.username, username);
+    }
+
+    #[tokio::test]
+    async fn test_get_user_by_username() {
+        let mut client = DiscuitClient::new("https://discuit.net");
+        client.initialize().await.unwrap();
+
+        let username =
+            get_env_var("DISCUIT_USERNAME").expect("DISCUIT_USERNAME must be set for this test");
+        let user = client.get_user_by_username(&username).await.unwrap();
+
+        match user {
+            UserResponse::User(user) => {
+                assert_eq!(user.username, username);
+            }
+            _ => panic!("Expected UserResponse::User"),
+        }
+    }
+
+    #[tokio::test]
+    async fn test_get_user_by_username_nonexistent() {
+        let mut client = DiscuitClient::new("https://discuit.net");
+        client.initialize().await.unwrap();
+
+        let username = random::<u64>().to_string();
+        let user = client.get_user_by_username(&username).await;
+
+        match user {
+            Ok(UserResponse::Error(APIError {
+                status,
+                code,
+                message,
+            })) => {
+                assert_eq!(status, 404);
+                assert_eq!(code, Some("user_not_found".to_string()));
+                assert_eq!(message, "User not found.");
+            }
+            Ok(_) => panic!("Expected UserResponse::Error"),
+            Err(e) => panic!("Expected Ok, got Err: {:?}", e),
+        }
     }
 }
