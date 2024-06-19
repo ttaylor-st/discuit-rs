@@ -178,11 +178,38 @@ impl DiscuitClient {
         self.reset();
         Ok(())
     }
+
+    /// Fetch the current user from the Discuit instance.
+    /// Returns either `User` or a `reqwest::Error`.
+    pub async fn get_user(&mut self) -> Result<User, reqwest::Error> {
+        self.log(LogLevel::Info, "Fetching user ...");
+        self.log(LogLevel::Info, &format!("GET {}/api/_user", self.base_url));
+        let response = self
+            .client
+            .get(&format!("{}/api/_user", self.base_url))
+            .header("X-Csrf-Token", &self.csrf_token)
+            .header(
+                "Cookie",
+                &format!("csrftoken={}; SID={}", self.csrf_token, self.session_id),
+            )
+            .send()
+            .await?;
+
+        let text = response.text().await?;
+        let user: User = serde_json::from_str(&text).unwrap();
+        self.log(LogLevel::Debug, &format!("User: {:#?}", user));
+        self.log(LogLevel::Info, "User fetched.");
+        Ok(user)
+    }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    fn get_env_var(name: &str) -> Result<String, String> {
+        std::env::var(name).map_err(|_| format!("Environment variable {} is not set", name))
+    }
 
     #[tokio::test]
     async fn test_initialize() {
@@ -201,11 +228,10 @@ mod tests {
         let mut client = DiscuitClient::new("https://discuit.net");
         client.initialize().await.unwrap();
 
-        // Requires you set the `DISCUIT_USERNAME` and `DISCUIT_PASSWORD` environment variables
-        // You might also want to disable history in your shell, by running `set +o history`
-        // before setting the environment variables.
-        let username = std::env::var("DISCUIT_USERNAME").unwrap();
-        let password = std::env::var("DISCUIT_PASSWORD").unwrap();
+        let username =
+            get_env_var("DISCUIT_USERNAME").expect("DISCUIT_USERNAME must be set for this test");
+        let password =
+            get_env_var("DISCUIT_PASSWORD").expect("DISCUIT_PASSWORD must be set for this test");
         client.login(&username, &password).await.unwrap();
         client.logout().await.unwrap();
 
@@ -213,5 +239,27 @@ mod tests {
         assert!(client.user.is_none());
         assert!(client.csrf_token.is_empty());
         assert!(client.session_id.is_empty());
+    }
+
+    #[tokio::test]
+    async fn test_get_user() {
+        let mut client = DiscuitClient::new("https://discuit.net");
+        client.initialize().await.unwrap();
+
+        let username =
+            get_env_var("DISCUIT_USERNAME").expect("DISCUIT_USERNAME must be set for this test");
+        let password =
+            get_env_var("DISCUIT_PASSWORD").expect("DISCUIT_PASSWORD must be set for this test");
+        client.login(&username, &password).await.unwrap();
+        let user = client.get_user().await.unwrap();
+        client.logout().await.unwrap();
+
+        // Ensure that the client is logged out
+        assert!(client.user.is_none());
+        assert!(client.csrf_token.is_empty());
+        assert!(client.session_id.is_empty());
+
+        // Ensure that the user is fetched
+        assert_eq!(user.username, username);
     }
 }
