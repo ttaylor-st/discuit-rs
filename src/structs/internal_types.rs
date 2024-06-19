@@ -1,10 +1,11 @@
 //! This module contains things used internally by `discuit-rs`.
 
+use serde::{Deserialize, Serialize};
 use std::fmt;
 
 /// LogLevel represents the level of logging to use.
 /// The levels are, in order of verbosity:
-#[derive(Debug, PartialEq, PartialOrd)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Deserialize, Serialize)]
 pub enum LogLevel {
     /// Log everything.
     /// This is the most verbose level and should be used for debugging.

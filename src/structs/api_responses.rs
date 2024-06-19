@@ -12,7 +12,7 @@ use serde::{Deserialize, Serialize};
 /// "message": "Human readable error message"
 /// }
 /// ```
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Deserialize, Serialize)]
 pub struct APIError {
     /// The HTTP status code.
     pub status: i32,
@@ -25,7 +25,7 @@ pub struct APIError {
 }
 
 /// `InitialResponse` represents the response from the `/api/_initial` endpoint.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Deserialize, Serialize)]
 pub struct InitialResponse {
     /// Array of reasons for reporting a post or comment.
     #[serde(rename = "reportReasons")]
@@ -63,7 +63,7 @@ pub struct InitialResponse {
 /// `LoginResponse` represents the response from the `/api/_login` endpoint.
 /// The body of the response is a JSON object that will be either of type
 /// `User` or `APIError`.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Deserialize, Serialize)]
 #[serde(untagged)]
 pub enum LoginResponse {
     /// The user object.

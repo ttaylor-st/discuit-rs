@@ -18,7 +18,7 @@ use serde::{Deserialize, Serialize};
 // - [X] Response (InitResponse)
 
 /// `Mutes` represents the mutes that a user has, including community and user mutes.
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Deserialize, Serialize)]
 pub struct Mutes {
     /// Array of community mutes.
     #[serde(rename = "communityMutes")]
@@ -29,7 +29,7 @@ pub struct Mutes {
 }
 
 /// `ReportReason` represents a reason for reporting a post or comment.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Deserialize, Serialize)]
 pub struct ReportReason {
     /// The ID of the report reason.
     pub id: i32,
@@ -40,7 +40,7 @@ pub struct ReportReason {
 }
 
 /// `User` represents a user on the platform.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Deserialize, Serialize)]
 pub struct User {
     /// The ID of the user.
     pub id: String,
@@ -114,7 +114,7 @@ pub struct User {
 }
 
 /// `Badge` represents a badge that a user has.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Deserialize, Serialize)]
 pub struct Badge {
     /// The ID of the badge.
     pub id: i32,
@@ -124,7 +124,7 @@ pub struct Badge {
 }
 
 /// `Community` represents a community on the platform.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Deserialize, Serialize)]
 pub struct Community {
     /// The ID of the community.
     pub id: String,
@@ -178,7 +178,7 @@ pub struct Community {
 }
 
 /// `ReportDetails` represents the details of reports on a community.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Deserialize, Serialize)]
 pub struct ReportDetails {
     /// The total number of reports.
     #[serde(rename = "noReports")]
@@ -192,7 +192,7 @@ pub struct ReportDetails {
 }
 
 /// `CommunityRule` represents a rule of a community.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Deserialize, Serialize)]
 pub struct CommunityRule {
     /// The ID of the community rule.
     pub id: i32,
@@ -218,7 +218,7 @@ pub struct CommunityRule {
 }
 
 /// `Image` represents an image.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Deserialize, Serialize)]
 pub struct Image {
     /// The ID of the image.
     pub id: String,
@@ -246,9 +246,9 @@ pub struct Image {
 }
 
 /// `ImageCopy` represents a copy of an `Image` in a different size.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Deserialize, Serialize)]
 pub struct ImageCopy {
-    /// The name of the image copy, used to identify it.
+    /// The name of the image used to identify it.
     pub name: Option<String>,
 
     /// The width of the image copy.
@@ -272,7 +272,7 @@ pub struct ImageCopy {
 }
 
 /// `Mute` represents a mute.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Deserialize, Serialize)]
 pub struct Mute {
     /// The ID of the mute.
     pub id: String,
@@ -299,7 +299,7 @@ pub struct Mute {
 }
 
 /// `Comment` represents a comment on a post.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Deserialize, Serialize)]
 pub struct Comment {
     /// The ID of the comment.
     pub id: String,
@@ -396,7 +396,7 @@ pub struct Comment {
 }
 
 /// `Post` represents a post.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Deserialize, Serialize)]
 pub struct Post {
     /// The ID of the post.
     pub id: String,
@@ -527,18 +527,18 @@ pub struct Post {
 }
 
 /// `Link` represents a link
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Deserialize, Serialize)]
 pub struct Link {
     /// The URL of the link.
     pub url: String,
-    /// The hostname of the link. For a URL of "https://discuit.net", this would be "discuit.net".
+    /// The hostname of the link. For a URL of "<https://discuit.net>", this would be "discuit.net".
     pub hostname: String,
     /// The image object of the OpenGraph image on the site. If no OpenGraph image was found, this is null.
     pub image: Option<Image>,
 }
 
 /// `List` represents a list.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Deserialize, Serialize)]
 pub struct List {
     /// The ID of the list.
     pub id: i32,
@@ -570,7 +570,7 @@ pub struct List {
 }
 
 /// `ListItem` represents an item in a list.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Deserialize, Serialize)]
 pub struct ListItem {
     /// The ID of the list item.
     pub id: i32,
