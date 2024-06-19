@@ -9,22 +9,22 @@ use reqwest::{Client, ClientBuilder};
 #[derive(Debug)]
 pub struct DiscuitClient {
     /// The HTTP client.
-    client: Client,
+    pub client: Client,
     /// The CSRF token.
-    csrf_token: String,
+    pub csrf_token: String,
     /// The session ID.
-    session_id: String,
+    pub session_id: String,
     /// The base URL of the Discuit instance.
-    base_url: String,
+    pub base_url: String,
     /// The user agent to use for requests.
     /// Defaults to "DiscuitClient".
-    user_agent: String,
+    pub user_agent: String,
     /// The User object of the authenticated user.
     /// If the client is not authenticated, this is None.
-    user: Option<User>,
+    pub user: Option<User>,
     /// `log_level` is the level of logging to use.
     /// Defaults to `LogLevel::Info`.
-    log_level: LogLevel,
+    pub log_level: LogLevel,
 }
 
 impl DiscuitClient {
@@ -102,6 +102,82 @@ impl DiscuitClient {
         self.log(LogLevel::Info, "Client initialized.");
         Ok(initial_response)
     }
+
+    /// Log in to the Discuit instance with the given username and password.
+    /// Returns either `LoginResponse` (can be either `User`, or `APIErrror`)
+    /// or a `reqwest::Error`.
+    pub async fn login(
+        &mut self,
+        username: &str,
+        password: &str,
+    ) -> Result<LoginResponse, reqwest::Error> {
+        self.log(LogLevel::Info, "Logging in ...");
+        self.log(
+            LogLevel::Info,
+            &format!("POST {}/api/_login", self.base_url),
+        );
+        let response = self
+            .client
+            .post(&format!("{}/api/_login", self.base_url))
+            .header("X-Csrf-Token", &self.csrf_token)
+            .header(
+                "Cookie",
+                &format!("csrftoken={}; SID={}", self.csrf_token, self.session_id),
+            )
+            .json(&LoginRequest {
+                username: username.to_string(),
+                password: password.to_string(),
+            })
+            .send()
+            .await?;
+
+        let text = response.text().await?;
+        let login_response: LoginResponse = serde_json::from_str(&text).unwrap();
+        self.log(
+            LogLevel::Debug,
+            &format!("Login response: {:#?}", login_response),
+        );
+        self.log(LogLevel::Info, "Logged in.");
+        self.user = match &login_response {
+            LoginResponse::Error(_) => None,
+            LoginResponse::User(user) => Some(user.clone()),
+        };
+
+        Ok(login_response)
+    }
+
+    /// Log out of the Discuit instance.
+    /// Returns either `()` or a `reqwest::Error`.
+    pub async fn logout(&mut self) -> Result<(), reqwest::Error> {
+        self.log(LogLevel::Info, "Logging out ...");
+        if self.user.is_none() {
+            self.log(LogLevel::Info, "Not logged in.");
+            return Ok(());
+        }
+
+        self.log(
+            LogLevel::Info,
+            &format!("POST {}/api/_login?action=logout", self.base_url),
+        );
+        let response = self
+            .client
+            .post(&format!("{}/api/_login?action=logout", self.base_url))
+            .header("X-Csrf-Token", &self.csrf_token)
+            .header(
+                "Cookie",
+                &format!("csrftoken={}; SID={}", self.csrf_token, self.session_id),
+            )
+            .send()
+            .await?;
+
+        self.log(LogLevel::Info, "Logged out.");
+        self.log(
+            LogLevel::Debug,
+            &format!("Logout response: {:#?}", response),
+        );
+        self.reset();
+        Ok(())
+    }
 }
 
 #[cfg(test)]
@@ -118,5 +194,24 @@ mod tests {
         assert!(!client.csrf_token.is_empty());
         assert!(!client.session_id.is_empty());
         assert!(response.is_ok());
+    }
+
+    #[tokio::test]
+    async fn test_login() {
+        let mut client = DiscuitClient::new("https://discuit.net");
+        client.initialize().await.unwrap();
+
+        // Requires you set the `DISCUIT_USERNAME` and `DISCUIT_PASSWORD` environment variables
+        // You might also want to disable history in your shell, by running `set +o history`
+        // before setting the environment variables.
+        let username = std::env::var("DISCUIT_USERNAME").unwrap();
+        let password = std::env::var("DISCUIT_PASSWORD").unwrap();
+        client.login(&username, &password).await.unwrap();
+        client.logout().await.unwrap();
+
+        // Ensure that the client is logged out
+        assert!(client.user.is_none());
+        assert!(client.csrf_token.is_empty());
+        assert!(client.session_id.is_empty());
     }
 }
