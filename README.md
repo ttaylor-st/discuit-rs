@@ -32,6 +32,9 @@ async fn main() {
 you can view the documentation [here](https://ttaylor-st.github.io/discuit-rss)
 and the examples [here](./examples).
 
+## api coverage
+
+you can check the current API coverage [here](./COVERAGE.md).
 
 ## license
 
