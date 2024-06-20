@@ -235,8 +235,8 @@ impl DiscuitClient {
 
 #[cfg(test)]
 mod tests {
-    use rand::random;
     use super::*;
+    use rand::random;
 
     fn get_env_var(name: &str) -> Result<String, String> {
         std::env::var(name).map_err(|_| format!("Environment variable {} is not set", name))
