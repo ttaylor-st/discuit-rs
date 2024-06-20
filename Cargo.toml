@@ -17,3 +17,4 @@ tokio = { version = "1.38.0", features = ["full"] }
 reqwest = { version = "0.12.5", features = ["json", "cookies"] }
 serde_json = "1.0.64"
 rand = "0.8.5"
+url = "2.5.2"

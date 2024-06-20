@@ -72,3 +72,51 @@ pub enum UserResponse {
     /// An API error.
     Error(APIError),
 }
+
+/// `PostFeedResponse` represents the response from the `/api/posts` endpoint.
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Deserialize, Serialize)]
+pub struct PostFeedResponse {
+    /// Array of posts.
+    pub posts: Vec<Post>,
+
+    /// Pagination cursor. Null implies end of pagination.
+    pub next: Option<String>,
+}
+
+/// `FeedResponse` represents the response from the `/api/users/{username}/feed` and
+/// list endpoints. Returns a feed array + pagination cursor or an API error.
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Deserialize, Serialize)]
+#[serde(untagged)]
+pub enum FeedResponse {
+    /// The feed array + pagination cursor.
+    Feed {
+        /// Array of feed items.
+        feed: Vec<FeedItem>,
+
+        /// Pagination cursor. Null implies end of pagination.
+        next: Option<Next>,
+    },
+
+    /// An API error.
+    Error(APIError),
+}
+
+/// `FeedItem` represents a post or comment in a feed.
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Deserialize, Serialize)]
+#[serde(untagged)]
+pub enum FeedItem {
+    /// A post.
+    Post(Post),
+
+    /// A comment.
+    Comment(Comment),
+}
+
+/// `Next` represents the pagination cursor in a feed response.
+/// The cursor can be either a string or an integer, depending on the sort method.
+/// If the sort method is `activity`, the cursor is an integer. Else, it is a string.
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Deserialize, Serialize)]
+pub enum Next {
+    String(String),
+    Int(i32),
+}

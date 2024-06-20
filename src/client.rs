@@ -3,6 +3,8 @@ use crate::structs::api_responses::*;
 use crate::structs::api_types::*;
 use crate::structs::internal_types::*;
 use reqwest::{Client, ClientBuilder};
+use std::collections::HashMap;
+use url::Url;
 
 /// DiscuitClient represents a client for the Discuit API and
 /// provides methods to interact with the API.
@@ -231,6 +233,106 @@ impl DiscuitClient {
         self.log(LogLevel::Info, "User by username fetched.");
         Ok(user_response)
     }
+
+    /// Fetch a user's feed.
+    pub async fn get_feed(&mut self, username: &str) -> Result<FeedResponse, reqwest::Error> {
+        self.log(LogLevel::Info, "Fetching feed ...");
+        self.log(
+            LogLevel::Info,
+            &format!("GET {}/api/users/{}/feed", self.base_url, username),
+        );
+        let response = self
+            .client
+            .get(&format!("{}/api/users/{}/feed", self.base_url, username))
+            .header("X-Csrf-Token", &self.csrf_token)
+            .header(
+                "Cookie",
+                &format!("csrftoken={}; SID={}", self.csrf_token, self.session_id),
+            )
+            .send()
+            .await
+            .unwrap();
+
+        let text = response.text().await.unwrap();
+        let feed: FeedResponse = serde_json::from_str(&text).unwrap();
+        self.log(LogLevel::Debug, &format!("Feed: {:#?}", feed));
+        self.log(LogLevel::Info, "Feed fetched.");
+
+        Ok(feed)
+    }
+
+    /// Fetch community or sitewide posts with optional query parameters.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// # use discuit_rs::client::*;
+    /// # #[tokio::main]
+    /// # async fn main() {
+    /// let base_url = "https://discuit.net";
+    /// let mut client = DiscuitClient::new(base_url);
+    ///
+    /// // Fetch all posts
+    /// let site_posts = client.get_posts(None, None).await.unwrap();
+    /// // Fetch posts from the "general" community
+    /// let community_posts = client.get_posts(None, Some("general")).await.unwrap();
+    /// let sorted_posts = client.get_posts(Some("new"), None).await.unwrap();
+    /// # }
+    /// ```
+    pub async fn get_posts(
+        &mut self,
+        sort: Option<&str>,
+        community: Option<&str>,
+    ) -> Result<PostFeedResponse, Box<dyn std::error::Error>> {
+        self.log(LogLevel::Info, "Fetching posts ...");
+
+        let mut url =
+            Url::parse(&format!("{}/api/posts", self.base_url)).expect("Failed to parse base URL");
+
+        let mut query_params = HashMap::new();
+        if let Some(sort) = sort {
+            query_params.insert("sort", sort);
+        } else {
+            query_params.insert("sort", "hot");
+        }
+        if let Some(community) = community {
+            query_params.insert("community", community);
+        }
+
+        url.query_pairs_mut().extend_pairs(query_params.into_iter());
+
+        self.log(LogLevel::Info, &format!("GET {}", url));
+
+        let response = self
+            .client
+            .get(url)
+            .header("X-Csrf-Token", &self.csrf_token)
+            .header(
+                "Cookie",
+                &format!("csrftoken={}; SID={}", self.csrf_token, self.session_id),
+            )
+            .send()
+            .await?;
+
+        if response.status().is_success() {
+            let text = response.text().await?;
+            let posts: PostFeedResponse = serde_json::from_str(&text).unwrap();
+            self.log(LogLevel::Debug, &format!("Posts: {:#?}", posts));
+            self.log(LogLevel::Info, "Posts fetched.");
+            Ok(posts)
+        } else {
+            let status = response.status();
+            let error_text = response
+                .text()
+                .await
+                .unwrap_or_else(|_| "Unknown error".to_string());
+            self.log(
+                LogLevel::Info,
+                &format!("Failed to fetch posts: {} - {}", status, error_text),
+            );
+            Err(format!("Failed to fetch posts: {} - {}", status, error_text).into())
+        }
+    }
 }
 
 #[cfg(test)]
@@ -330,6 +432,53 @@ mod tests {
                 assert_eq!(message, "User not found.");
             }
             Ok(_) => panic!("Expected UserResponse::Error"),
+            Err(e) => panic!("Expected Ok, got Err: {:?}", e),
+        }
+    }
+
+    #[tokio::test]
+    async fn test_get_feed() {
+        let mut client = DiscuitClient::new("https://discuit.net");
+        client.initialize().await.unwrap();
+
+        let username =
+            get_env_var("DISCUIT_USERNAME").expect("DISCUIT_USERNAME must be set for this test");
+        let feed = client.get_feed(username.as_str()).await.unwrap();
+
+        match feed {
+            FeedResponse::Feed { feed, next } => {
+                assert!(!feed.is_empty());
+                assert!(next.is_some());
+            }
+            FeedResponse::Error(APIError {
+                status,
+                code: _,
+                message,
+            }) => {
+                panic!("Failed to fetch feed: {} - {}", status, message);
+            }
+        }
+    }
+
+    #[tokio::test]
+    async fn test_get_feed_nonexistent() {
+        let mut client = DiscuitClient::new("https://discuit.net");
+        client.initialize().await.unwrap();
+
+        let username = random::<u64>().to_string();
+        let feed = client.get_feed(&username).await;
+
+        match feed {
+            Ok(FeedResponse::Error(APIError {
+                status,
+                code,
+                message,
+            })) => {
+                assert_eq!(status, 404);
+                assert_eq!(code, Some("user_not_found".to_string()));
+                assert_eq!(message, "User not found.");
+            }
+            Ok(_) => panic!("Expected FeedResponse::Error"),
             Err(e) => panic!("Expected Ok, got Err: {:?}", e),
         }
     }

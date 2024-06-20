@@ -403,7 +403,7 @@ pub struct Post {
     /// The type of post.
     #[serde(rename = "type")]
     pub post_type: String,
-    /// The value in https://discuit.net/gaming/post/{publicId}
+    /// The value in <https://discuit.net/gaming/post/{publicId}>
     #[serde(rename = "publicId")]
     pub public_id: String,
 
@@ -589,4 +589,29 @@ pub struct ListItem {
     /// The target item.
     #[serde(rename = "targetItem")]
     pub target_item: Post,
+}
+
+/// `Sort` represents the method used to sort posts.
+pub enum Sort {
+    Hot,
+    Activity,
+    New,
+    Day,
+    Week,
+    Month,
+    Year,
+}
+
+impl Sort {
+    pub fn to_string(&self) -> String {
+        match self {
+            Sort::Hot => "hot".to_string(),
+            Sort::Activity => "activity".to_string(),
+            Sort::New => "new".to_string(),
+            Sort::Day => "day".to_string(),
+            Sort::Week => "week".to_string(),
+            Sort::Month => "month".to_string(),
+            Sort::Year => "year".to_string(),
+        }
+    }
 }
